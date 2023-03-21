@@ -1,0 +1,118 @@
+import csv
+from datetime import datetime
+from tkinter import *
+from tkinter import messagebox
+from tkinter import ttk
+
+###############################################################################
+
+# GUI Frame design
+GUI = Tk()
+GUI.title('Event Entrance Register')
+GUI.geometry('800x600')
+style = ttk.Style()
+style.configure('TLabelframe.Label', font=('Arial', 20))
+
+Frame1 = Frame(GUI)
+Frame1.place(x=500, y=350)
+Frame1.pack(fill="both", expand=TRUE)
+
+Label1 = Label(GUI, text=' Safety Week Register ', font=('Arial', 36, 'bold'), fg='blue', bg='orange')
+Label1.place(x=130, y=80)
+
+LabelFrame1 = ttk.LabelFrame(GUI, text='Please scan barcode or Employee ID entry')
+LabelFrame1.pack()
+LabelFrame1.place(x=120, y=200)
+
+LabelFrame2 = ttk.LabelFrame(GUI, text='Show data ')
+LabelFrame2.pack()
+LabelFrame2.place(x=310, y=400)
+
+v_data = StringVar()
+v_data.set('')
+Entry1 = ttk.Entry(LabelFrame1, textvariable=v_data)
+Entry1 = ttk.Entry(LabelFrame1, style="TEntry", textvariable=v_data)
+Entry1.pack(pady=30, padx=30)
+
+
+###############################################################################
+
+# Write data entry insert to entry box refferance Botton1
+def writecsv(datalist):
+    with open('data.csv', 'a', encoding='utf-8', newline='') as file:
+        fw = csv.writer(file)  # fw = file writer
+        fw.writerow(datalist)
+        print(f'Data written successfully: {datalist}')
+
+
+###############################################################################
+
+# Read the CSV file and get the values from the first two columns
+values = []
+with open('data.csv', 'r') as file:
+    reader = csv.reader(file)
+    for row in reader:
+        try:
+            value = f"{row[0]} - {row[1]}"
+            values.append(value)
+        except IndexError:
+            # Handle rows with fewer than two columns
+            pass
+
+
+###############################################################################
+
+# Refresh data referance Bottom two
+def refresh_data():
+    # Clear the current values in the Combobox
+    combo['values'] = []
+
+    # Read the CSV file and get the values from the first two columns
+    values = []
+    with open('data.csv', 'r') as file:
+        reader = csv.reader(file)
+        for ROW in reader:
+            try:
+                value = f"{ROW[0]} - {ROW[1]}"
+                values.append(value)
+            except IndexError:
+                # Handle rows with fewer than two columns
+                pass
+
+    # Update the values of the Combobox
+    combo['values'] = values
+    combo.current(0)
+
+
+combo = ttk.Combobox(LabelFrame2, values=values)
+combo.pack()
+
+
+###############################################################################
+
+# Save entry data to CSV file and return entry in entry box.
+def SaveData(event=None):
+    t = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    data: str = v_data.get()
+    if not data.strip():
+        messagebox.showwarning('Please check', 'Please check barcode or Employee ID again')
+    else:
+        text = [t, data]
+        writecsv(text)
+        v_data.set('')
+    return data
+
+Entry1.bind('<Return>', lambda event: SaveData())
+
+###############################################################################
+
+# Bottom GUI Design
+Bottom1 = ttk.Button(LabelFrame1, text='Enter', command=SaveData)
+Bottom1.pack(ipadx=5, ipady=5)
+
+Bottom2 = ttk.Button(LabelFrame2, text='Refresh', command=refresh_data)
+Bottom2.pack()
+
+GUI.mainloop()
+
+###############################################################################
